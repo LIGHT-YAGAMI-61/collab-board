@@ -1,0 +1,16 @@
+# Secrets
+.env
+
+# Backend (Maven / IntelliJ)
+collab-board/target/
+collab-board/collab-board/target/
+collab-board/.idea/
+**/*.iml
+
+# Frontend (Node / Vite)
+collab-board-frontend/node_modules/
+collab-board-frontend/dist/
+
+# OS junk
+.DS_Store
+Thumbs.db
