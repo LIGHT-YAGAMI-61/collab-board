@@ -25,17 +25,17 @@ jobs:
 
       - name: Build and push backend image
         run: |
-          docker build -t ${{ env.ACR_LOGIN_SERVER }}/collab-board-backend:latest ./collab-board/collab-board
-          docker push ${{ env.ACR_LOGIN_SERVER }}/collab-board-backend:latest
+          docker build -t ${{ env.ACR_LOGIN_SERVER }}/collab-board-backend:${{ github.sha }} ./collab-board/collab-board
+          docker push ${{ env.ACR_LOGIN_SERVER }}/collab-board-backend:${{ github.sha }}
 
       - name: Build and push frontend image
         run: |
           docker build \
             --build-arg VITE_API_BASE_URL=${{ env.BACKEND_URL }}/api \
             --build-arg VITE_WS_BASE_URL=${{ env.BACKEND_URL }}/ws \
-            -t ${{ env.ACR_LOGIN_SERVER }}/collab-board-frontend:latest \
+            -t ${{ env.ACR_LOGIN_SERVER }}/collab-board-frontend:${{ github.sha }} \
             ./collab-board-frontend
-          docker push ${{ env.ACR_LOGIN_SERVER }}/collab-board-frontend:latest
+          docker push ${{ env.ACR_LOGIN_SERVER }}/collab-board-frontend:${{ github.sha }}
 
       - name: Log in to Azure
         uses: azure/login@v2
@@ -47,11 +47,11 @@ jobs:
           az containerapp update \
             --name collab-board-backend \
             --resource-group collab-board-rg \
-            --image ${{ env.ACR_LOGIN_SERVER }}/collab-board-backend:latest
+            --image ${{ env.ACR_LOGIN_SERVER }}/collab-board-backend:${{ github.sha }}
 
       - name: Deploy new frontend revision
         run: |
           az containerapp update \
             --name collab-board-frontend \
             --resource-group collab-board-rg \
-            --image ${{ env.ACR_LOGIN_SERVER }}/collab-board-frontend:latest
+            --image ${{ env.ACR_LOGIN_SERVER }}/collab-board-frontend:${{ github.sha }}
