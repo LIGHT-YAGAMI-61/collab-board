@@ -35,9 +35,9 @@ jobs:
             --build-arg VITE_WS_BASE_URL=${{ env.BACKEND_URL }}/ws \
             -t ${{ env.ACR_LOGIN_SERVER }}/collab-board-frontend:${{ github.sha }} \
             ./collab-board-frontend
-          docker push ${{ env.ACR_LOGIN_SERVER }}/collab-board-frontend:${{ github.sha }}
+                  docker push ${{ env.ACR_LOGIN_SERVER }}/collab-board-frontend:${{ github.sha }}
 
-            - name: Debug - check baked-in URL
+      - name: Debug - check baked-in URL
         run: |
           docker run --rm --entrypoint sh ${{ env.ACR_LOGIN_SERVER }}/collab-board-frontend:${{ github.sha }} -c "grep -o 'baseURL:[^,]*' /usr/share/nginx/html/assets/*.js"
 
