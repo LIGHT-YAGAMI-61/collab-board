@@ -266,7 +266,7 @@ function BoardDetail() {
     const token = localStorage.getItem('token');
 
     const client = new Client({
-      webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+      webSocketFactory: () => new SockJS(import.meta.env.VITE_WS_BASE_URL || 'http://localhost:8080/ws'),
       connectHeaders: {
         Authorization: `Bearer ${token}`,
       },
