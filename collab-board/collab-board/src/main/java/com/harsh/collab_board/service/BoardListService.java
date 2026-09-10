@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import com.harsh.collab_board.entity.User;
 import com.harsh.collab_board.repository.UserRepository;
 import com.harsh.collab_board.dto.BoardUpdateMessage;
+import com.harsh.collab_board.exception.ResourceNotFoundException;
+import com.harsh.collab_board.exception.ForbiddenException;
 
 
 import java.util.List;
@@ -38,13 +40,13 @@ public class BoardListService {
 
     public BoardList createList(Long boardId, BoardList boardList , String username) {
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new RuntimeException("Board not found with id: " + boardId));
+                .orElseThrow(() -> new ResourceNotFoundException("Board not found with id: " + boardId));
 
         User user = userRepository.findByUsername(username)
-                        .orElseThrow(() -> new RuntimeException("User not found") ) ;
+                .orElseThrow(() -> new ResourceNotFoundException("User not found") ) ;
 
         if ( !boardMemberService.isMember(boardId , user.getId())) {
-            throw new RuntimeException("You are not a member of this board") ;
+            throw new ForbiddenException("You are not a member of this board") ;
         }
 
         boardList.setBoard(board);
@@ -59,24 +61,26 @@ public class BoardListService {
     }
 
     public List<BoardList> getListsByBoard(Long boardId , String username) {
+        boardRepository.findById(boardId)
+                                .orElseThrow(() -> new ResourceNotFoundException("Board not found with id: " + boardId));
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found")) ;
+                .orElseThrow(() -> new ResourceNotFoundException("User not found")) ;
 
         if ( !boardMemberService.isMember(boardId , user.getId())) {
-            throw new RuntimeException("You are not a member of this board") ;
+            throw new ForbiddenException("You are not a member of this board") ;
         }
         return boardListRepository.findByBoardIdOrderByPositionAsc(boardId);
     }
 
     public BoardList updateList(Long id, BoardList updatedList , String username) {
         BoardList existing = boardListRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("List not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("List not found with id: " + id));
 
         User user = userRepository.findByUsername(username)
-                        .orElseThrow(() -> new RuntimeException("User not found") ) ;
+                .orElseThrow(() -> new ResourceNotFoundException("User not found") ) ;
 
         if ( !boardMemberService.isMember(existing.getBoard().getId() , user.getId())) {
-            throw new RuntimeException("You are not a memeber of this board") ;
+            throw new ForbiddenException("You are not a member of this board") ;
         }
 
         existing.setTitle(updatedList.getTitle());
@@ -93,15 +97,15 @@ public class BoardListService {
 
     public void deleteList(Long id , String username) {
         BoardList list = boardListRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("List not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("List not found with id: " + id));
 
         Long boardId = list.getBoard().getId();
 
         User user = userRepository.findByUsername(username)
-                        .orElseThrow(() -> new RuntimeException("User not found")) ;
+                .orElseThrow(() -> new ResourceNotFoundException("User not found")) ;
 
         if ( !boardMemberService.isMember(boardId , user.getId())) {
-            throw new RuntimeException("You are not a member of this board") ;
+            throw new ForbiddenException("You are not a member of this board") ;
         }
 
         boardListRepository.deleteById(id);
