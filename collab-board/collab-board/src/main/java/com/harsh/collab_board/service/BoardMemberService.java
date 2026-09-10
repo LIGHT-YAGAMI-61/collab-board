@@ -4,6 +4,8 @@ import com.harsh.collab_board.entity.*;
 import com.harsh.collab_board.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.harsh.collab_board.exception.ResourceNotFoundException;
+import com.harsh.collab_board.exception.ConflictException;
 
 import java.util.List;
 
@@ -42,16 +44,16 @@ public class BoardMemberService {
 
     public JoinRequest requestToJoin(Long boardId, Long userId) {
         Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new RuntimeException("Board not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Board not found"));
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Board not found"));
 
         if (isMember(boardId, userId)) {
-            throw new RuntimeException("Already a member of this board");
+            throw new ConflictException("Already a member of this board");
         }
 
         joinRequestRepository.findByBoardIdAndUserIdAndStatus(boardId, userId, "PENDING")
-                .ifPresent(r -> { throw new RuntimeException("Join request already pending"); });
+                .ifPresent(r -> { throw new ConflictException("Join request already pending"); });
 
         JoinRequest request = new JoinRequest();
         request.setBoard(board);
@@ -66,7 +68,7 @@ public class BoardMemberService {
 
     public void acceptRequest(Long requestId) {
         JoinRequest request = joinRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
 
         request.setStatus("ACCEPTED");
         joinRequestRepository.save(request);
@@ -76,7 +78,7 @@ public class BoardMemberService {
 
     public void rejectRequest(Long requestId) {
         JoinRequest request = joinRequestRepository.findById(requestId)
-                .orElseThrow(() -> new RuntimeException("Request not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Request not found"));
 
         request.setStatus("REJECTED");
         joinRequestRepository.save(request);
