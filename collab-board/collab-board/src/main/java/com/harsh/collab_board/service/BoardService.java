@@ -54,7 +54,7 @@ public class BoardService {
 
         Board board = boardRepository.findById(id)
                             .orElseThrow(() -> new ResourceNotFoundException("Board not found with id: " + id)) ;
-        
+
                     if ( !boardMemberService.isMember(id , user.getId())) {
                     throw new ForbiddenException("You are not a member of this board") ;
                 }
