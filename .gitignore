@@ -14,5 +14,6 @@ collab-board-frontend/dist/
 # OS junk
 .DS_Store
 Thumbs.db
-
 .jqwik-database
+
+.idea/
