@@ -52,11 +52,14 @@ public class BoardService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found")) ;
 
-        if ( !boardMemberService.isMember(id , user.getId())) {
-            throw new ForbiddenException("You are not a member of this board") ;
-        }
+        Board board = boardRepository.findById(id)
+                            .orElseThrow(() -> new ResourceNotFoundException("Board not found with id: " + id)) ;
+        
+                    if ( !boardMemberService.isMember(id , user.getId())) {
+                    throw new ForbiddenException("You are not a member of this board") ;
+                }
 
-        return boardRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Board not found with id :"  + id )) ;
+                    return board ;
     }
 
     public void deleteBoard(Long id , String username) {
