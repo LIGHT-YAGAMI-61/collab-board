@@ -12,6 +12,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import com.harsh.collab_board.dto.InsertCharRequest;
+import com.harsh.collab_board.exception.ResourceNotFoundException;
+import com.harsh.collab_board.exception.ForbiddenException;
 
 import java.util.List;
 
@@ -42,9 +44,9 @@ public class CardCharacterService {
 
         private void checkMembership(Long boardId, String username) {
                 User user = userRepository.findByUsername(username)
-                        .orElseThrow(() -> new RuntimeException("User not found"));
+                        .orElseThrow(() -> new ResourceNotFoundException("User not found"));
                 if (!boardMemberService.isMember(boardId, user.getId())) {
-                        throw new RuntimeException("You are not a member of this board");
+                        throw new ForbiddenException("You are not a member of this board");
                 }
         }
 
@@ -53,7 +55,7 @@ public class CardCharacterService {
                                              String username) {
 
                 Card card = cardRepository.findById(cardId)
-                        .orElseThrow(() -> new RuntimeException("Card not found"));
+                        .orElseThrow(() -> new ResourceNotFoundException("Card not found"));
 
                 Long boardId = card.getBoardList().getBoard().getId();
                 checkMembership(boardId, username);
@@ -90,7 +92,7 @@ public class CardCharacterService {
         public CardCharacter deleteCharacter(Long cardId, String charId, String username) {
                 CardCharacter character = cardCharacterRepository
                         .findByCardIdAndCharId(cardId, charId)
-                        .orElseThrow(() -> new RuntimeException("Character not found"));
+                        .orElseThrow(() -> new ResourceNotFoundException("Character not found"));
 
                 Long boardId = character.getCard().getBoardList().getBoard().getId();
                 checkMembership(boardId, username);
@@ -109,7 +111,7 @@ public class CardCharacterService {
 
         public List<CardCharacter> insertCharacters(Long cardId, List<InsertCharRequest> requests, String username) {
                 Card card = cardRepository.findById(cardId)
-                        .orElseThrow(() -> new RuntimeException("Card not found"));
+                        .orElseThrow(() -> new ResourceNotFoundException("Card not found"));
 
                 Long boardId = card.getBoardList().getBoard().getId();
                 checkMembership(boardId, username);
@@ -150,7 +152,7 @@ public class CardCharacterService {
                 for (String charId : charIds) {
                         CardCharacter character = cardCharacterRepository
                                 .findByCardIdAndCharId(cardId, charId)
-                                .orElseThrow(() -> new RuntimeException("Character not found"));
+                                .orElseThrow(() -> new ResourceNotFoundException("Character not found"));
 
                         Long boardId = character.getCard().getBoardList().getBoard().getId();
                         checkMembership(boardId, username);
@@ -169,7 +171,7 @@ public class CardCharacterService {
 
         public String getDescriptionText(Long cardId, String username) {
                 Card card = cardRepository.findById(cardId)
-                        .orElseThrow(() -> new RuntimeException("Card not found"));
+                        .orElseThrow(() -> new ResourceNotFoundException("Card not found"));
                 checkMembership(card.getBoardList().getBoard().getId(), username);
 
                 List<CardCharacter> characters = cardCharacterRepository.findByCardId(cardId);
@@ -178,7 +180,7 @@ public class CardCharacterService {
 
         public List<CardCharacter> getCharacters(Long cardId, String username) {
                 Card card = cardRepository.findById(cardId)
-                        .orElseThrow(() -> new RuntimeException("Card not found"));
+                        .orElseThrow(() -> new ResourceNotFoundException("Card not found"));
                 checkMembership(card.getBoardList().getBoard().getId(), username);
 
                 return cardCharacterRepository.findByCardId(cardId);
@@ -186,7 +188,7 @@ public class CardCharacterService {
 
         public List<CardCharacter> getOrderedCharacters(Long cardId, String username) {
                 Card card = cardRepository.findById(cardId)
-                        .orElseThrow(() -> new RuntimeException("Card not found"));
+                        .orElseThrow(() -> new ResourceNotFoundException("Card not found"));
                 checkMembership(card.getBoardList().getBoard().getId(), username);
 
                 List<CardCharacter> characters = cardCharacterRepository.findByCardId(cardId);
