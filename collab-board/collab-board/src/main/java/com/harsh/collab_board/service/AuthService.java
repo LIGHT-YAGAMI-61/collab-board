@@ -10,6 +10,8 @@ import com.harsh.collab_board.security.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.harsh.collab_board.exception.ConflictException;
+import com.harsh.collab_board.exception.BadRequestException;
 
 @Service
 public class AuthService {
@@ -25,10 +27,10 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request)  {
         if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already Taken " ) ;
+            throw new ConflictException("Username already Taken " ) ;
         }
         if ( userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already registered ") ;
+            throw new ConflictException("Email already registered ") ;
         }
 
         User user = new User() ;
@@ -44,10 +46,10 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
-                .orElseThrow(() -> new RuntimeException("Invalid username or password")) ;
+                .orElseThrow(() -> new BadRequestException("Invalid username or password")) ;
 
         if ( !passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid username or password ") ;
+            throw new BadRequestException("Invalid username or password ") ;
         }
 
         String token = jwtUtil.generateToken(user.getUsername());
