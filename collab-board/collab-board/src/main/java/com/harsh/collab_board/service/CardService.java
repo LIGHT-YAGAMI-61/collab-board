@@ -12,6 +12,8 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.harsh.collab_board.dto.BoardUpdateMessage;
+import com.harsh.collab_board.exception.ResourceNotFoundException;
+import com.harsh.collab_board.exception.ForbiddenException;
 
 import java.util.List;
 
@@ -42,15 +44,15 @@ public class CardService {
 
     private void checkMembership(Long boardId , String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found")) ;
+                .orElseThrow(() -> new ResourceNotFoundException("User not found")) ;
         if ( !boardMemberService.isMember(boardId , user.getId())) {
-            throw new RuntimeException("You are not a member of this board") ;
+            throw new ForbiddenException("You are not a member of this board") ;
         }
     }
 
     public Card createCard(Long boardListId, Card card , String username) {
         BoardList boardList = boardListRepository.findById(boardListId)
-                .orElseThrow(() -> new RuntimeException("List not found with id: " + boardListId));
+                .orElseThrow(() -> new ResourceNotFoundException("List not found with id: " + boardListId));
 
         checkMembership(boardList.getBoard().getId() , username);
 
@@ -67,7 +69,7 @@ public class CardService {
 
     public List<Card> getCardsByList(Long boardListId , String username) {
         BoardList boardList = boardListRepository.findById(boardListId)
-                .orElseThrow(() -> new RuntimeException("List not found with id :" + boardListId)) ;
+                .orElseThrow(() -> new ResourceNotFoundException("List not found with id :" + boardListId)) ;
 
         checkMembership(boardList.getBoard().getId(), username);
 
@@ -76,7 +78,7 @@ public class CardService {
 
     public Card updateCard(Long id, Card updatedCard , String username) {
         Card existing = cardRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Card not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Card not found with id: " + id));
 
         checkMembership(existing.getBoardList().getBoard().getId() , username);
 
@@ -96,19 +98,19 @@ public class CardService {
     @Transactional
     public void deleteCard(Long id , String username) {
         Card card = cardRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Card not found with id: " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("Card not found with id: " + id));
         Long boardId = card.getBoardList().getBoard().getId();
         Long listId = card.getBoardList().getId() ;
 
         User user = userRepository.findByUsername(username)
-                        .orElseThrow(() -> new RuntimeException("User not found")) ;
+                .orElseThrow(() -> new ResourceNotFoundException("User not found")) ;
 
         if ( !boardMemberService.isMember(boardId , user.getId())) {
-            throw new RuntimeException("You are not a member of this board") ;
+            throw new ForbiddenException("You are not a member of this board") ;
         }
 
         if (!boardMemberService.isAdmin(boardId , user.getId())) {
-            throw new RuntimeException("Only admins can delete cards") ;
+            throw new ForbiddenException("Only admins can delete cards") ;
         }
 
         cardCharacterRepository.deleteByCardId(id) ;
@@ -127,12 +129,12 @@ public class CardService {
 
     public Card moveCard(Long cardId, Long targetListId, Integer targetPosition , String username) {
         Card card = cardRepository.findById(cardId)
-                .orElseThrow(() -> new RuntimeException("Card not found with id: " + cardId));
+                .orElseThrow(() -> new ResourceNotFoundException("Card not found with id: " + cardId));
 
     checkMembership(card.getBoardList().getBoard().getId() , username);
 
         BoardList targetList = boardListRepository.findById(targetListId)
-                .orElseThrow(() -> new RuntimeException("List not found with id: " + targetListId));
+                .orElseThrow(() -> new ResourceNotFoundException("List not found with id: " + targetListId));
 
         Long sourceListId = card.getBoardList().getId();
         Integer sourcePosition = card.getPosition();
